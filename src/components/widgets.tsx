@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   useAppDispatch,
   useAppSelector,
@@ -317,14 +318,9 @@ export function QuickAddForm({ onDone }: { onDone?: () => void }) {
 /* Goals snapshot (compact rail widget)                                */
 /* ------------------------------------------------------------------ */
 
-export function GoalsSnapshot({
-  collapsible = false,
-  onViewAll,
-}: {
-  collapsible?: boolean;
-  onViewAll?: () => void;
-}) {
+export function GoalsSnapshot({ collapsible = false }: { collapsible?: boolean }) {
   const goals = useAppSelector((s) => s.goals);
+  const navigate = useNavigate();
 
   if (goals.isLoading) {
     return (
@@ -386,16 +382,16 @@ export function GoalsSnapshot({
         </ul>
       )}
 
-      {onViewAll && (
+      <div className="mt-4">
         <button
           type="button"
-          onClick={onViewAll}
-          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg border border-line py-2 text-xs font-bold text-brand-700 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.99]"
+          onClick={() => navigate("/goals")}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-line py-2 text-xs font-bold text-brand-700 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.99]"
         >
           Open savings board
-          <Icon name="chevronDown" className="h-3.5 w-3.5" strokeWidth={2.4} />
+          <Icon name="chevronRight" className="h-3.5 w-3.5" strokeWidth={2.4} />
         </button>
-      )}
+      </div>
     </WidgetCard>
   );
 }

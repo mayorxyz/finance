@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   useAppDispatch,
   useAppSelector,
@@ -55,14 +56,9 @@ function BudgetMeter() {
   );
 }
 
-export function Sidebar({
-  active,
-  onNavigate,
-}: {
-  active: string;
-  onNavigate: (id: string) => void;
-}) {
+export function Sidebar({ active }: { active: string }) {
   const dispatch = useAppDispatch();
+  const routerNavigate = useNavigate();
   const open = useAppSelector((s) => s.ui.sidebarOpen);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -81,7 +77,8 @@ export function Sidebar({
   }, [open, dispatch]);
 
   const nav = (id: string) => {
-    onNavigate(id);
+    const item = NAV_ITEMS.find((i) => i.id === id);
+    if (item) routerNavigate(item.path);
     dispatch(setSidebar(false));
   };
 
