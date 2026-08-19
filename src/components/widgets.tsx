@@ -1,5 +1,4 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { format } from "date-fns";
 import {
   useAppDispatch,
   useAppSelector,
@@ -7,12 +6,11 @@ import {
   transactionAdded,
   transactionRemoved,
   submitTransaction,
-  contributeToGoal,
 } from "../redux/store";
-import type { Transaction } from "../types";
+import type { Goal, Transaction } from "../types";
 import { cx, fmtCurrency, fmtCurrencyWhole, todayISO } from "../utils/format";
 import { Icon } from "./icons";
-import { Skeleton } from "./ui";
+import { RingGauge, Skeleton } from "./ui";
 
 export function WidgetCard({
   title,
@@ -316,113 +314,88 @@ export function QuickAddForm({ onDone }: { onDone?: () => void }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Goals                                                               */
+/* Goals snapshot (compact rail widget)                                */
 /* ------------------------------------------------------------------ */
 
-export function GoalsWidget({ collapsible = false, id }: { collapsible?: boolean; id?: string }) {
-  const dispatch = useAppDispatch();
+export function GoalsSnapshot({
+  collapsible = false,
+  onViewAll,
+}: {
+  collapsible?: boolean;
+  onViewAll?: () => void;
+}) {
   const goals = useAppSelector((s) => s.goals);
-  const [busyId, setBusyId] = useState<string | null>(null);
-
-  const contribute = async (goalId: string, name: string, saved: number, target: number) => {
-    if (saved >= target) {
-      dispatch(pushToast({ kind: "info", message: `${name} is already fully funded.` }));
-      return;
-    }
-    setBusyId(goalId);
-    const res = await dispatch(contributeToGoal({ goalId, amount: 50 }));
-    setBusyId(null);
-    if (contributeToGoal.fulfilled.match(res)) {
-      const done = Math.min(target, saved + 50) >= target;
-      dispatch(
-        pushToast({
-          kind: "success",
-          message: done ? `${name} funded — goal reached!` : `Contributed $50 to ${name}.`,
-        }),
-      );
-    }
-  };
 
   if (goals.isLoading) {
     return (
-      <WidgetCard title="Savings goals" caption="Loading…">
+      <WidgetCard title="Goals" caption="Loading snapshot…">
         <div className="space-y-4">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="space-y-2">
-              <Skeleton className="h-3.5 w-2/3" />
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
+          <Skeleton className="mx-auto h-20 w-20 rounded-full" />
+          {[0, 1].map((i) => (
+            <Skeleton key={i} className="h-2 w-full rounded-full" />
           ))}
         </div>
       </WidgetCard>
     );
   }
 
+  const list = goals.allIds.map((id) => goals.byId[id]).filter((g): g is Goal => Boolean(g));
+  const totalSaved = list.reduce((s, g) => s + g.saved, 0);
+  const totalTarget = list.reduce((s, g) => s + g.target, 0);
+  const pct = totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0;
+  const top = list
+    .filter((g) => g.saved < g.target)
+    .sort((a, b) => b.saved / b.target - a.saved / a.target)
+    .slice(0, 2);
+
   return (
     <WidgetCard
-      id={id}
-      title="Savings goals"
-      caption={`${goals.allIds.length} active · contribute $50 at a time`}
+      title="Goals"
+      caption="Snapshot of your savings board"
       collapsible={collapsible}
     >
-      <ul className="space-y-4">
-        {goals.allIds.map((gid) => {
-          const g = goals.byId[gid];
-          if (!g) return null;
-          const pct = Math.min(100, Math.round((g.saved / g.target) * 100));
-          const done = pct >= 100;
-          return (
-            <li key={g.id} className="group rounded-lg p-2 -m-2 transition-colors hover:bg-canvas">
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-sm font-semibold text-ink">{g.name}</p>
-                <p className="font-mono text-xs tabular-nums text-soft">
-                  <span className={cx("font-semibold", done ? "text-gain" : "text-ink")}>
-                    {fmtCurrencyWhole(g.saved)}
-                  </span>{" "}
-                  / {fmtCurrencyWhole(g.target)}
-                </p>
-              </div>
-              <div
-                className="mt-2 h-2 overflow-hidden rounded-full bg-line"
-                role="progressbar"
-                aria-valuenow={pct}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-label={`${g.name} progress`}
-              >
-                <div
-                  className={cx(
-                    "h-full rounded-full transition-all duration-700 ease-out",
-                    done ? "bg-gain" : "bg-gold-500",
-                  )}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <p className="font-mono text-[11px] font-medium text-soft">
-                  {pct}% · due {format(new Date(g.deadline), "MMM yyyy")}
-                </p>
-                {done ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-gain-soft px-2 py-0.5 text-[11px] font-bold text-gain">
-                    <Icon name="check" className="h-3 w-3" strokeWidth={2.6} />
-                    Funded
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => contribute(g.id, g.name, g.saved, g.target)}
-                    disabled={busyId === g.id}
-                    className="inline-flex items-center gap-1 rounded-md border border-brand-200 bg-brand-50 px-2 py-1 font-mono text-[11px] font-bold text-brand-700 transition hover:bg-brand-100 active:scale-95 disabled:opacity-60"
-                  >
-                    <Icon name="plus" className="h-3 w-3" strokeWidth={2.6} />
-                    {busyId === g.id ? "Saving…" : "$50"}
-                  </button>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="flex flex-col items-center">
+        <RingGauge pct={pct} size={88} stroke={10}>
+          <span className="font-mono text-base font-bold tabular-nums text-ink">{pct}%</span>
+        </RingGauge>
+        <p className="mt-2 font-mono text-sm font-semibold tabular-nums text-ink">
+          {fmtCurrencyWhole(totalSaved)}
+          <span className="text-xs font-medium text-soft"> of {fmtCurrencyWhole(totalTarget)}</span>
+        </p>
+      </div>
+
+      {top.length > 0 && (
+        <ul className="mt-4 space-y-3">
+          {top.map((g) => {
+            const p = Math.min(100, Math.round((g.saved / g.target) * 100));
+            return (
+              <li key={g.id}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="truncate text-xs font-semibold text-ink">{g.name}</p>
+                  <p className="font-mono text-[11px] tabular-nums text-soft">{p}%</p>
+                </div>
+                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-line">
+                  <div
+                    className="h-full rounded-full bg-gold-500 transition-all duration-700 ease-out"
+                    style={{ width: `${p}%` }}
+                  />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {onViewAll && (
+        <button
+          type="button"
+          onClick={onViewAll}
+          className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg border border-line py-2 text-xs font-bold text-brand-700 transition hover:border-brand-200 hover:bg-brand-50 active:scale-[0.99]"
+        >
+          Open savings board
+          <Icon name="chevronDown" className="h-3.5 w-3.5" strokeWidth={2.4} />
+        </button>
+      )}
     </WidgetCard>
   );
 }

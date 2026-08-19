@@ -44,7 +44,15 @@ function mergeTransactions(): Transaction[] {
 }
 
 function loadGoals(): Goal[] {
-  return readLS<Goal[]>(LS_GOALS, GOALS);
+  const raw = readLS<Goal[]>(LS_GOALS, GOALS);
+  // Normalize older persisted shapes (pre-contribution-log schema).
+  return raw.map((g) => ({
+    ...g,
+    icon: g.icon || "target",
+    color: g.color || "#F5A623",
+    monthlyPace: typeof g.monthlyPace === "number" ? g.monthlyPace : 0,
+    contributions: Array.isArray(g.contributions) ? g.contributions : [],
+  }));
 }
 
 export const api = {
@@ -75,14 +83,9 @@ export const api = {
     return simulateNetwork({ id }, 200, 220);
   },
 
-  async contributeToGoal(goalId: string, amount: number): Promise<Goal[]> {
-    const goals = loadGoals().map((g) =>
-      g.id === goalId
-        ? { ...g, saved: Math.min(g.target, g.saved + amount) }
-        : g,
-    );
+  async saveGoals(goals: Goal[]): Promise<Goal[]> {
     writeLS(LS_GOALS, goals);
-    return simulateNetwork(goals, 240, 240);
+    return simulateNetwork(goals, 260, 260);
   },
 
   resetDemoData(): Promise<{ ok: true }> {

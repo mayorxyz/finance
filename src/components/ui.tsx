@@ -141,6 +141,62 @@ export function Sparkline({
   );
 }
 
+export function RingGauge({
+  pct,
+  size = 72,
+  stroke = 8,
+  color = "#F5A623",
+  track = "#E5E7EB",
+  children,
+}: {
+  pct: number;
+  size?: number;
+  stroke?: number;
+  color?: string;
+  track?: string;
+  children?: ReactNode;
+}) {
+  const [drawn, setDrawn] = useState(0);
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setDrawn(pct);
+      return;
+    }
+    const t = window.setTimeout(() => setDrawn(pct), 80);
+    return () => window.clearTimeout(t);
+  }, [pct]);
+
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const offset = c * (1 - Math.min(100, Math.max(0, drawn)) / 100);
+
+  return (
+    <div
+      className="relative inline-flex shrink-0 items-center justify-center"
+      style={{ width: size, height: size }}
+      role="img"
+      aria-label={`${Math.round(pct)} percent complete`}
+    >
+      <svg width={size} height={size} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={track} strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke={color}
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1)" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">{children}</div>
+    </div>
+  );
+}
+
 export function CategoryBadge({ category }: { category?: Category }) {
   if (!category) return null;
   return (

@@ -13,10 +13,34 @@ import { Header } from "./components/Header";
 import { Sidebar } from "./components/Sidebar";
 import { BalanceSection } from "./components/BalanceSection";
 import { TransactionsSection } from "./components/TransactionsSection";
-import { QuickAddForm, GoalsWidget, TopCategoriesWidget, WidgetCard } from "./components/widgets";
+import { QuickAddForm, GoalsSnapshot, TopCategoriesWidget, WidgetCard } from "./components/widgets";
 import { Skeleton, ToastHost } from "./components/ui";
 
 const ChartsSection = lazy(() => import("./components/ChartsSection"));
+const GoalsSection = lazy(() => import("./components/GoalsSection"));
+
+function GoalsFallback() {
+  return (
+    <section aria-label="Goals loading" className="space-y-5">
+      <Skeleton className="h-5 w-40" />
+      <div className="grid gap-5 md:grid-cols-2">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="rounded-xl border border-line bg-surface p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-11 w-11 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            </div>
+            <Skeleton className="mt-5 h-6 w-2/5" />
+            <Skeleton className="mt-3 h-2.5 w-full rounded-full" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function ChartsFallback() {
   return (
@@ -102,7 +126,7 @@ function Shell() {
 
   /* scroll-spy — reads live DOM so lazy/loaded swaps never break it */
   useEffect(() => {
-    const ids = ["overview", "analytics", "transactions", "goals", "goals-rail"];
+    const ids = ["overview", "analytics", "goals", "transactions"];
     let raf = 0;
     const compute = () => {
       raf = 0;
@@ -115,7 +139,7 @@ function Shell() {
         if (rect.width === 0 && rect.height === 0) continue;
         if (rect.top <= probe) current = id;
       }
-      setActive(current === "goals-rail" ? "goals" : current);
+      setActive(current);
     };
     const onScroll = () => {
       if (!raf) raf = window.requestAnimationFrame(compute);
@@ -186,6 +210,10 @@ function Shell() {
                 <ChartsSection />
               </Suspense>
 
+              <Suspense fallback={<GoalsFallback />}>
+                <GoalsSection />
+              </Suspense>
+
               <TransactionsSection />
 
               {/* widgets flow into the main column below xl */}
@@ -198,7 +226,7 @@ function Shell() {
                   <QuickAddForm />
                 </WidgetCard>
                 <div className="space-y-5">
-                  <GoalsWidget id="goals" collapsible />
+                  <GoalsSnapshot collapsible onViewAll={() => navigate("goals")} />
                   <TopCategoriesWidget />
                 </div>
               </div>
@@ -212,7 +240,7 @@ function Shell() {
               <WidgetCard id="quick-add-rail" title="Quick add" caption="Logs straight into your ledger">
                 <QuickAddForm />
               </WidgetCard>
-              <GoalsWidget id="goals-rail" />
+              <GoalsSnapshot onViewAll={() => navigate("goals")} />
               <TopCategoriesWidget />
             </aside>
           </div>

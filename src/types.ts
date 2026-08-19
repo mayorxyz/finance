@@ -38,12 +38,25 @@ export interface Category {
   monthlyBudget: number;
 }
 
+export interface Contribution {
+  id: string;
+  /** ISO date string (yyyy-MM-dd). */
+  date: string;
+  amount: number;
+}
+
 export interface Goal {
   id: string;
   name: string;
+  icon: string;
+  color: string;
   target: number;
   saved: number;
+  /** Planned monthly contribution, in dollars. */
+  monthlyPace: number;
+  /** ISO date string (yyyy-MM-dd). */
   deadline: string;
+  contributions: Contribution[];
 }
 
 export interface DashboardSeries {

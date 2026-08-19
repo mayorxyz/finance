@@ -1,7 +1,8 @@
-import { format, subDays, subMonths } from "date-fns";
+import { addMonths, format, set, subDays, subMonths } from "date-fns";
 import type {
   Account,
   Category,
+  Contribution,
   DashboardSeries,
   Goal,
   Transaction,
@@ -207,11 +208,77 @@ export function buildTransactions(): Transaction[] {
 /* Goals & chart series                                                */
 /* ------------------------------------------------------------------ */
 
+function seedContributions(monthly: number, monthsBack: number, salt: number): Contribution[] {
+  const rnd = mulberry32(900 + salt * 37);
+  const out: Contribution[] = [];
+  const today = new Date();
+  for (let m = monthsBack; m >= 1; m -= 1) {
+    const count = rnd() > 0.55 ? 2 : 1;
+    for (let i = 0; i < count; i += 1) {
+      const day = 3 + Math.floor(rnd() * 22);
+      out.push({
+        id: `c-seed-${salt}-${m}-${i}`,
+        date: format(set(subMonths(today, m), { date: day }), "yyyy-MM-dd"),
+        amount: Math.round((monthly / count) * (0.75 + rnd() * 0.5)),
+      });
+    }
+  }
+  // A fresh contribution early in the current month so pace math is live.
+  out.push({
+    id: `c-seed-${salt}-current`,
+    date: format(today, "yyyy-MM-dd"),
+    amount: Math.round(monthly * (0.35 + rnd() * 0.3)),
+  });
+  return out.sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+const inMonths = (n: number) => format(addMonths(new Date(), n), "yyyy-MM-dd");
+
 export const GOALS: Goal[] = [
-  { id: "goal-efund", name: "Emergency Fund", target: 15000, saved: 10800, deadline: "2026-03-01" },
-  { id: "goal-japan", name: "Japan Trip", target: 4000, saved: 1850, deadline: "2026-10-15" },
-  { id: "goal-macbook", name: "MacBook Pro", target: 2499, saved: 2199, deadline: "2026-01-20" },
-  { id: "goal-home", name: "Home Down Payment", target: 40000, saved: 12600, deadline: "2028-06-01" },
+  {
+    id: "goal-efund",
+    name: "Emergency Fund",
+    icon: "piggy",
+    color: "#0D7E6E",
+    target: 15000,
+    saved: 12650,
+    monthlyPace: 350,
+    deadline: inMonths(6),
+    contributions: seedContributions(350, 9, 1),
+  },
+  {
+    id: "goal-japan",
+    name: "Japan Trip",
+    icon: "ticket",
+    color: "#F5A623",
+    target: 4200,
+    saved: 1900,
+    monthlyPace: 300,
+    deadline: inMonths(8),
+    contributions: seedContributions(300, 6, 2),
+  },
+  {
+    id: "goal-home",
+    name: "Home Down Payment",
+    icon: "home",
+    color: "#64748B",
+    target: 40000,
+    saved: 11200,
+    monthlyPace: 900,
+    deadline: inMonths(30),
+    contributions: seedContributions(900, 11, 3),
+  },
+  {
+    id: "goal-macbook",
+    name: "MacBook Pro",
+    icon: "bolt",
+    color: "#0EA5E9",
+    target: 2499,
+    saved: 2499,
+    monthlyPace: 210,
+    deadline: inMonths(1),
+    contributions: seedContributions(210, 10, 4),
+  },
 ];
 
 export function buildSeries(): DashboardSeries {

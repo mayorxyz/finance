@@ -17,8 +17,17 @@ import type {
   TypeFilter,
 } from "../types";
 import { api } from "../services/mockApi";
+import type { Contribution } from "../types";
+import { todayISO } from "../utils/format";
 
 export const PAGE_SIZE = 20;
+
+export interface ContributeArg {
+  goalId: string;
+  amount: number;
+  contributionId: string;
+  prevSaved: number;
+}
 
 function byId<T extends { id: string }>(list: T[]): Record<string, T> {
   return Object.fromEntries(list.map((item) => [item.id, item]));
@@ -45,8 +54,48 @@ export const removeTransaction = createAsyncThunk(
 
 export const contributeToGoal = createAsyncThunk(
   "goals/contribute",
-  ({ goalId, amount }: { goalId: string; amount: number }) =>
-    api.contributeToGoal(goalId, amount),
+  async (arg: ContributeArg, { getState }) => {
+    const state = getState() as RootState;
+    const goal = state.goals.byId[arg.goalId];
+    if (!goal) throw new Error("Goal not found");
+    const contribution: Contribution = {
+      id: arg.contributionId,
+      date: todayISO(),
+      amount: arg.amount,
+    };
+    const updated: Goal = {
+      ...goal,
+      saved: Math.min(goal.target, goal.saved + arg.amount),
+      contributions: [contribution, ...goal.contributions].slice(0, 40),
+    };
+    const next = state.goals.allIds.map((id) =>
+      id === arg.goalId ? updated : state.goals.byId[id],
+    );
+    await api.saveGoals(next);
+    return { goalId: arg.goalId, saved: updated.saved };
+  },
+);
+
+export const createGoal = createAsyncThunk(
+  "goals/create",
+  async (goal: Goal, { getState }) => {
+    const state = getState() as RootState;
+    const next = [goal, ...state.goals.allIds.map((id) => state.goals.byId[id])];
+    await api.saveGoals(next);
+    return goal;
+  },
+);
+
+export const deleteGoal = createAsyncThunk(
+  "goals/delete",
+  async (goal: Goal, { getState }) => {
+    const state = getState() as RootState;
+    const next = state.goals.allIds
+      .filter((id) => id !== goal.id)
+      .map((id) => state.goals.byId[id]);
+    await api.saveGoals(next);
+    return goal;
+  },
 );
 
 export const resetDemo = createAsyncThunk("demo/reset", () =>
@@ -129,9 +178,45 @@ const goalsSlice = createSlice({
       s.allIds = a.payload.goals.map((x) => x.id);
       s.isLoading = false;
     });
+    /* contribute — optimistic on pending, authoritative on fulfilled, rollback on rejected */
+    b.addCase(contributeToGoal.pending, (s, a) => {
+      const g = s.byId[a.meta.arg.goalId];
+      if (!g) return;
+      g.saved = Math.min(g.target, g.saved + a.meta.arg.amount);
+      g.contributions = [
+        { id: a.meta.arg.contributionId, date: todayISO(), amount: a.meta.arg.amount },
+        ...g.contributions,
+      ];
+    });
     b.addCase(contributeToGoal.fulfilled, (s, a) => {
-      s.byId = byId(a.payload);
-      s.allIds = a.payload.map((x) => x.id);
+      const g = s.byId[a.payload.goalId];
+      if (g) g.saved = a.payload.saved;
+    });
+    b.addCase(contributeToGoal.rejected, (s, a) => {
+      const g = s.byId[a.meta.arg.goalId];
+      if (!g) return;
+      g.saved = a.meta.arg.prevSaved;
+      g.contributions = g.contributions.filter(
+        (c) => c.id !== a.meta.arg.contributionId,
+      );
+    });
+    /* create — optimistic insert */
+    b.addCase(createGoal.pending, (s, a) => {
+      s.byId[a.meta.arg.id] = a.meta.arg;
+      s.allIds = [a.meta.arg.id, ...s.allIds];
+    });
+    b.addCase(createGoal.rejected, (s, a) => {
+      delete s.byId[a.meta.arg.id];
+      s.allIds = s.allIds.filter((id) => id !== a.meta.arg.id);
+    });
+    /* delete — optimistic removal, restore on failure */
+    b.addCase(deleteGoal.pending, (s, a) => {
+      delete s.byId[a.meta.arg.id];
+      s.allIds = s.allIds.filter((id) => id !== a.meta.arg.id);
+    });
+    b.addCase(deleteGoal.rejected, (s, a) => {
+      s.byId[a.meta.arg.id] = a.meta.arg;
+      s.allIds = [a.meta.arg.id, ...s.allIds];
     });
   },
 });
