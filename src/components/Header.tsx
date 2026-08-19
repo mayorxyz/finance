@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
 import {
   useAppDispatch,
   useAppSelector,
   pushToast,
   initializeDashboard,
   resetDemo,
+  setSidebar,
 } from "../redux/store";
 import { cx } from "../utils/format";
 import { Icon } from "./icons";
 
 export const NAV_ITEMS = [
-  { id: "overview", label: "Overview", icon: "grid" },
-  { id: "analytics", label: "Analytics", icon: "chartPulse" },
-  { id: "transactions", label: "Transactions", icon: "listIcon" },
-  { id: "goals", label: "Goals", icon: "target" },
+  { id: "overview", label: "Overview", icon: "grid", path: "/" },
+  { id: "analytics", label: "Analytics", icon: "chartPulse", path: "/analytics" },
+  { id: "transactions", label: "Transactions", icon: "listIcon", path: "/transactions" },
+  { id: "goals", label: "Goals", icon: "target", path: "/goals" },
 ];
 
 export function Logo({ compact = false }: { compact?: boolean }) {
@@ -46,13 +48,9 @@ export function Logo({ compact = false }: { compact?: boolean }) {
 }
 
 export function Header({
-  active,
-  onNavigate,
   onAdd,
   synced,
 }: {
-  active: string;
-  onNavigate: (id: string) => void;
   onAdd: () => void;
   synced: boolean;
 }) {
@@ -62,6 +60,7 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const sidebarOpen = useAppSelector((s) => s.ui.sidebarOpen);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -120,30 +119,43 @@ export function Header({
       </div>
 
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          onClick={() => dispatch(setSidebar(true))}
+          aria-label="Open menu"
+          aria-expanded={sidebarOpen}
+          className="-ml-1 rounded-lg p-2 text-soft transition hover:bg-canvas hover:text-ink lg:hidden"
+        >
+          <Icon name="menu" className="h-5 w-5" strokeWidth={2.2} />
+        </button>
         <Logo />
 
         <nav aria-label="Primary" className="ml-8 hidden items-center gap-1 lg:flex">
           {NAV_ITEMS.map((item) => (
-            <button
+            <NavLink
               key={item.id}
-              type="button"
-              onClick={() => onNavigate(item.id)}
-              aria-current={active === item.id ? "true" : undefined}
-              className={cx(
-                "relative rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
-                active === item.id
-                  ? "text-brand-700"
-                  : "text-soft hover:bg-canvas hover:text-ink",
-              )}
+              to={item.path}
+              end={item.path === "/"}
+              className={({ isActive }) =>
+                cx(
+                  "relative rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
+                  isActive ? "text-brand-700" : "text-soft hover:bg-canvas hover:text-ink",
+                )
+              }
             >
-              {item.label}
-              <span
-                className={cx(
-                  "absolute inset-x-3 -bottom-[13px] h-[3px] rounded-t-full bg-brand-600 transition-all duration-300",
-                  active === item.id ? "opacity-100" : "scale-x-0 opacity-0",
-                )}
-              />
-            </button>
+              {({ isActive }) => (
+                <>
+                  {item.label}
+                  <span
+                    aria-hidden="true"
+                    className={cx(
+                      "absolute inset-x-3 -bottom-[13px] h-[3px] rounded-t-full bg-brand-600 transition-all duration-300",
+                      isActive ? "opacity-100" : "scale-x-0 opacity-0",
+                    )}
+                  />
+                </>
+              )}
+            </NavLink>
           ))}
         </nav>
 
@@ -166,7 +178,7 @@ export function Header({
           <button
             type="button"
             onClick={onAdd}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98]"
+            className="hidden items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 active:scale-[0.98] lg:inline-flex"
           >
             <Icon name="plus" className="h-4 w-4" strokeWidth={2.4} />
             <span className="hidden sm:inline">Add</span>

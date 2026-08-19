@@ -99,7 +99,7 @@ export function TransactionsSection() {
           <div className="border-b border-line px-4 py-4 sm:px-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 id="transactions-title" className="text-xl font-extrabold tracking-tight text-ink">
-                Recent transactions
+                Full ledger
               </h2>
               <p className="font-mono text-xs font-medium text-soft" aria-live="polite">
                 {isLoading ? "Loading ledger…" : `${visible.length} of ${txState.allIds.length} shown`}
