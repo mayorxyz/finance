@@ -205,7 +205,8 @@ export function Sidebar({
                   </button>
                 </div>
                 <p className="border-t border-line px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-soft">
-                  Demo build · data stored locally
+                  This is a Demo build
+                  data stored locally
                 </p>
               </div>
             )}

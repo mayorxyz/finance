@@ -141,7 +141,7 @@ function Shell() {
       <div className="lg:hidden">
         <Header onAdd={handleAdd} synced={synced} />
       </div>
-      <Sidebar active={active} />
+      <Sidebar active={active} onAdd={handleAdd} synced={synced} />
 
       <div className="lg:pl-[200px]">
         <main className="mx-auto max-w-[1400px] px-4 pb-32 pt-6 sm:px-6 lg:px-8 lg:pb-16 lg:pt-8">
@@ -156,10 +156,6 @@ function Shell() {
           </Suspense>
 
           <footer className="mt-14 border-t border-line pt-6 text-center">
-            <p className="font-mono text-[11px] leading-relaxed text-soft">
-              Ledgerline · demo build — synthetic data, persisted in your browser.
-              <br className="sm:hidden" /> Nothing leaves this device.
-            </p>
           </footer>
         </main>
       </div>
