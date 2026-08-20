@@ -93,7 +93,7 @@ export default function AnalyticsPage() {
             Analytics
           </h1>
           <p className="mt-1 max-w-xl text-sm text-soft">
-            Twelve months of cash flow, category allocation and portfolio growth — hover any
+            Twelve months of cash flow, category allocation and portfolio growth hover any
             chart for exact figures.
           </p>
         </header>

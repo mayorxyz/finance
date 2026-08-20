@@ -17,7 +17,7 @@ export default function TransactionsPage() {
           </h1>
           <p className="mt-1 max-w-xl text-sm text-soft">
             {total > 0
-              ? `${total} entries across all accounts — search, filter, sort and paginate the full history.`
+              ? `${total} entries across all accounts search, filter, sort and paginate the full history.`
               : "Every debit and credit across your accounts will land here."}
           </p>
         </header>

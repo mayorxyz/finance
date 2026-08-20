@@ -585,7 +585,7 @@ export default function GoalsSection() {
                 Goals
               </h2>
               <p className="text-sm md:text-base text-soft leading-relaxed max-w-2xl">
-                Milestones, contribution pace and projected completion — fund them in one tap.
+                Milestones, contribution pace and projected completion fund them in one tap.
               </p>
             </div>
           </div>

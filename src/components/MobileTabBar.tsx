@@ -46,19 +46,25 @@ export function MobileTabBar({ onAdd }: { onAdd: () => void }) {
       className="fixed inset-x-0 bottom-0 z-40 lg:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid grid-cols-5 items-end border-t border-line bg-surface/95 shadow-[0_-6px_20px_rgba(16,24,40,0.07)] backdrop-blur">
+      <div className="grid grid-cols-5 items-center border-t border-line bg-surface/95 shadow-[0_-6px_20px_rgba(16,24,40,0.07)] backdrop-blur">
         <TabLink item={overview} />
         <TabLink item={analytics} />
-        <div className="relative flex justify-center">
+        
+        {/* Standardized, inline add button */}
+        <div className="flex flex-col items-center justify-center pb-2.5 pt-2">
           <button
             type="button"
             onClick={onAdd}
             aria-label="Add transaction"
-            className="-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg ring-4 ring-canvas transition hover:bg-brand-700 active:scale-90"
+            className="flex flex-col items-center gap-1 text-[10px] font-bold text-soft transition-colors hover:text-brand-600 active:scale-95"
           >
-            <Icon name="plus" className="h-6 w-6" strokeWidth={2.5} />
+            <span className="flex h-[21px] w-[21px] items-center justify-center rounded-full bg-brand-600 text-white">
+              <Icon name="plus" className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </span>
+            Add
           </button>
         </div>
+
         <Fragment key={transactions.id}>
           <TabLink item={transactions} />
         </Fragment>

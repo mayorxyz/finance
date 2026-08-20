@@ -109,7 +109,7 @@ export const resetDemo = createAsyncThunk("demo/reset", () =>
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: { name: "Alex Kim", email: "alex.kim@meridian.dev", initials: "AK" },
+    user: { name: "Mayor B", email: "mayor.b@meridian.dev", initials: "MB" },
     isLoading: false,
   },
   reducers: {},
