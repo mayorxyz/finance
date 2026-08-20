@@ -88,10 +88,10 @@ function GoalCard({
   const last = goal.contributions[0];
 
   return (
-    <article className="group relative flex flex-col rounded-xl border border-line bg-surface p-5 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md">
+    <article className="group relative flex flex-col rounded-xl border border-line bg-surface p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-md sm:p-5">
       <div className="flex items-start gap-3">
         <span
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-105 sm:h-11 sm:w-11"
           style={{
             backgroundColor: `${goal.color}14`,
             color: `color-mix(in srgb, ${goal.color} 78%, #1A1F36)`,
@@ -110,7 +110,7 @@ function GoalCard({
         </div>
         <span
           className={cx(
-            "inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold",
+            "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold sm:px-2.5 sm:py-1 sm:text-[11px]",
             s.status.cls,
           )}
         >
@@ -121,7 +121,7 @@ function GoalCard({
 
       <div className="mt-4 flex items-end justify-between gap-3">
         <div>
-          <p className="font-mono text-[22px] font-bold leading-none tabular-nums text-ink">
+          <p className="font-mono text-xl font-bold leading-none tabular-nums text-ink sm:text-[22px]">
             {fmtCurrency(goal.saved)}
           </p>
           <p className="mt-1 text-xs text-soft">
@@ -130,7 +130,7 @@ function GoalCard({
         </div>
         <p
           className={cx(
-            "font-mono text-lg font-bold tabular-nums",
+            "font-mono text-base font-bold tabular-nums sm:text-lg",
             s.funded ? "text-gain" : "text-brand-600",
           )}
         >
@@ -164,7 +164,8 @@ function GoalCard({
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg bg-canvas p-3">
+      {/* Stacks vertically on mobile, side-by-side on desktop */}
+      <div className="mt-4 grid grid-cols-1 gap-3 rounded-lg bg-canvas p-3 sm:grid-cols-2">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-wider text-soft">Projected</p>
           <p className="mt-0.5 font-mono text-sm font-semibold tabular-nums text-ink">
@@ -186,8 +187,8 @@ function GoalCard({
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3.5">
-        <div className="flex items-center gap-1.5" role="group" aria-label={`Contribute to ${goal.name}`}>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3.5">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2" role="group" aria-label={`Contribute to ${goal.name}`}>
           {[25, 50, 100].map((amt) => (
             <button
               key={amt}
@@ -195,7 +196,7 @@ function GoalCard({
               disabled={s.funded}
               onClick={() => onContribute(goal, amt)}
               aria-label={`Contribute $${amt} to ${goal.name}`}
-              className="rounded-md border border-line px-2 py-1 font-mono text-xs font-bold tabular-nums text-brand-700 transition hover:border-brand-200 hover:bg-brand-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-line disabled:hover:bg-transparent"
+              className="rounded-md border border-line px-1.5 py-1 font-mono text-[11px] font-bold tabular-nums text-brand-700 transition hover:border-brand-200 hover:bg-brand-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:border-line disabled:hover:bg-transparent sm:px-2 sm:text-xs"
             >
               +${amt}
             </button>
@@ -334,7 +335,7 @@ function NewGoalModal({ open, onClose }: { open: boolean; onClose: () => void })
         role="dialog"
         aria-modal="true"
         aria-labelledby="new-goal-title"
-        className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-line bg-surface p-6 shadow-lg sm:max-w-md sm:rounded-2xl"
+        className="relative max-h-[92vh] w-full overflow-y-auto rounded-t-2xl border border-line bg-surface p-4 shadow-lg sm:max-w-md sm:rounded-2xl sm:p-6"
         style={{ animation: "sheet-up 0.3s cubic-bezier(0.22,1,0.36,1) both" }}
       >
         <div className="mb-5 flex items-start justify-between">
@@ -370,7 +371,8 @@ function NewGoalModal({ open, onClose }: { open: boolean; onClose: () => void })
             {errors.name && <p className="mt-1 text-xs font-medium text-loss">{errors.name}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Stacks vertically on mobile so inputs don't cramp */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="ng-target" className={labelCls}>Target</label>
               <div className="relative">
@@ -405,7 +407,7 @@ function NewGoalModal({ open, onClose }: { open: boolean; onClose: () => void })
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="ng-monthly" className={labelCls}>Monthly plan</label>
               <div className="relative">
@@ -572,33 +574,28 @@ export default function GoalsSection() {
   return (
     <section id="goals" aria-labelledby="goals-title" className="scroll-mt-24">
       <Reveal>
-        <header className="flex flex-wrap items-center gap-x-8 gap-y-4">
-            <div className="flex flex-col gap-2 mb-6 md:mb-8">
-              {/* Page Title */}
-              <h1 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">
-                Savings board
-              </h1>
-              
-              {/* Subtitle & Description Container */}
-              <div className="space-y-1">
-                <h2 className="text-base md:text-lg font-semibold text-ink">
-                  Goals
-                </h2>
-                
-                {/* Description: max-w-2xl prevents it from stretching awkwardly across the whole screen */}
-                <p className="text-sm md:text-base text-soft leading-relaxed max-w-2xl">
-                  Milestones, contribution pace and projected completion  fund them in one tap.
-                </p>
-              </div>
-              
+        {/* Stacks vertically on mobile, side-by-side on desktop */}
+        <header className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">
+              Savings board
+            </h1>
+            <div className="space-y-1">
+              <h2 className="text-base md:text-lg font-semibold text-ink">
+                Goals
+              </h2>
+              <p className="text-sm md:text-base text-soft leading-relaxed max-w-2xl">
+                Milestones, contribution pace and projected completion — fund them in one tap.
+              </p>
             </div>
+          </div>
           {list.length > 0 && (
-            <div className="flex items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 shadow-sm">
+            <div className="flex items-center gap-4 rounded-xl border border-line bg-surface px-4 py-3 shadow-sm sm:px-5 sm:py-4">
               <RingGauge pct={overallPct} size={76} stroke={9}>
                 <span className="font-mono text-sm font-bold tabular-nums text-ink">{overallPct}%</span>
               </RingGauge>
               <div>
-                <p className="font-mono text-lg font-bold leading-tight tabular-nums text-ink">
+                <p className="font-mono text-base font-bold leading-tight tabular-nums text-ink sm:text-lg">
                   {fmtCurrencyWhole(totalSaved)}
                   <span className="ml-1.5 text-xs font-medium text-soft">
                     of {fmtCurrencyWhole(totalTarget)}
