@@ -6,7 +6,6 @@ import {
   pushToast,
   initializeDashboard,
   resetDemo,
-  setSidebar,
 } from "../redux/store";
 import { cx } from "../utils/format";
 import { Icon } from "./icons";
@@ -60,7 +59,6 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const sidebarOpen = useAppSelector((s) => s.ui.sidebarOpen);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -119,15 +117,6 @@ export function Header({
       </div>
 
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          onClick={() => dispatch(setSidebar(true))}
-          aria-label="Open menu"
-          aria-expanded={sidebarOpen}
-          className="-ml-1 rounded-lg p-2 text-soft transition hover:bg-canvas hover:text-ink lg:hidden"
-        >
-          <Icon name="menu" className="h-5 w-5" strokeWidth={2.2} />
-        </button>
         <Logo />
 
         <nav aria-label="Primary" className="ml-8 hidden items-center gap-1 lg:flex">
@@ -160,21 +149,6 @@ export function Header({
         </nav>
 
         <div className="ml-auto flex items-center gap-2.5 sm:gap-3">
-          <span
-            className="hidden items-center gap-2 rounded-full border border-line bg-canvas px-3 py-1.5 font-mono text-[11px] font-medium text-soft md:inline-flex"
-            aria-live="polite"
-          >
-            <span
-              className={cx("h-2 w-2 rounded-full", synced ? "bg-gain" : "bg-gold-500")}
-              style={
-                synced
-                  ? { animation: "pulse-dot 2.2s ease-out infinite" }
-                  : undefined
-              }
-            />
-            {synced ? "Synced" : "Syncing…"}
-          </span>
-
           <button
             type="button"
             onClick={onAdd}

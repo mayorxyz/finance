@@ -573,17 +573,25 @@ export default function GoalsSection() {
     <section id="goals" aria-labelledby="goals-title" className="scroll-mt-24">
       <Reveal>
         <header className="flex flex-wrap items-center gap-x-8 gap-y-4">
-          <div className="min-w-0 flex-1">
-            <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
-              Savings board
-            </p>
-            <h2 id="goals-title" className="mt-1 text-[22px] font-extrabold tracking-tight text-ink md:text-2xl">
-              Goals
-            </h2>
-            <p className="mt-1 text-sm text-soft">
-              Milestones, contribution pace and projected completion — fund them in one tap.
-            </p>
-          </div>
+            <div className="flex flex-col gap-2 mb-6 md:mb-8">
+              {/* Page Title */}
+              <h1 className="text-2xl md:text-3xl font-bold text-ink tracking-tight">
+                Savings board
+              </h1>
+              
+              {/* Subtitle & Description Container */}
+              <div className="space-y-1">
+                <h2 className="text-base md:text-lg font-semibold text-ink">
+                  Goals
+                </h2>
+                
+                {/* Description: max-w-2xl prevents it from stretching awkwardly across the whole screen */}
+                <p className="text-sm md:text-base text-soft leading-relaxed max-w-2xl">
+                  Milestones, contribution pace and projected completion  fund them in one tap.
+                </p>
+              </div>
+              
+            </div>
           {list.length > 0 && (
             <div className="flex items-center gap-4 rounded-xl border border-line bg-surface px-5 py-4 shadow-sm">
               <RingGauge pct={overallPct} size={76} stroke={9}>

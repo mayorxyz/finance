@@ -138,7 +138,9 @@ function Shell() {
 
   return (
     <div className="min-h-screen">
-      <Header onAdd={handleAdd} synced={synced} />
+      <div className="lg:hidden">
+        <Header onAdd={handleAdd} synced={synced} />
+      </div>
       <Sidebar active={active} />
 
       <div className="lg:pl-[200px]">
